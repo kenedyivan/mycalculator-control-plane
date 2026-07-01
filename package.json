@@ -1,0 +1,1 @@
+{"private": true, "type": "module", "scripts": {"build": "echo no frontend build needed"}, "devDependencies": {}}

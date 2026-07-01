@@ -1,0 +1,17 @@
+services:
+  control-plane:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mycalculator-control-plane
+    restart: unless-stopped
+    ports:
+      - "8310:8080"
+    volumes:
+      - control_plane_storage:/var/www/storage
+      - control_plane_deployments:/var/www/deployments
+      - ~/.ssh:/root/.ssh:ro
+
+volumes:
+  control_plane_storage:
+  control_plane_deployments:
