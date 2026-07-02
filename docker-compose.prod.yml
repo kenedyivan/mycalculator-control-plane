@@ -1,0 +1,43 @@
+services:
+  control-plane:
+    image: ghcr.io/kenedyivan/mycalculator-control-plane:latest
+    restart: unless-stopped
+    ports:
+      - "8310:8080"
+    env_file:
+      - .env
+    volumes:
+      - control_plane_storage:/var/www/storage
+      - control_plane_deployments:/var/www/deployments
+      - ~/.ssh:/root/.ssh:ro
+    depends_on:
+      - mysql
+
+  queue:
+    image: ghcr.io/kenedyivan/mycalculator-control-plane:latest
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --timeout=1200
+    env_file:
+      - .env
+    volumes:
+      - control_plane_storage:/var/www/storage
+      - control_plane_deployments:/var/www/deployments
+      - ~/.ssh:/root/.ssh:ro
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: control_plane_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: controlplane
+      MYSQL_PASSWORD: controlplane
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+  control_plane_storage:
+  control_plane_deployments:
