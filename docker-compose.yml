@@ -8,10 +8,71 @@ services:
     ports:
       - "8310:8080"
     volumes:
+      - .:/var/www
+      - /var/www/vendor
       - control_plane_storage:/var/www/storage
       - control_plane_deployments:/var/www/deployments
       - ~/.ssh:/root/.ssh:ro
+    networks:
+      - control-plane-network
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mycalculator-queue
+    command: php artisan queue:work --tries=3 --timeout=1200
+    volumes:
+      - .:/var/www
+      - /var/www/vendor
+      - control_plane_storage:/var/www/storage
+      - control_plane_deployments:/var/www/deployments
+      - ~/.ssh:/root/.ssh:ro
+    networks:
+      - control-plane-network
+
+  controlplanemysqldb:
+    image: mysql:8.4
+    container_name: mycalculator-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: control_plane_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: controlplane
+      MYSQL_PASSWORD: controlplane
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - control-plane-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: mycalculator-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      controlplanemysqldb:
+        condition: service_healthy
+    ports:
+      - "8311:80"
+    environment:
+      PMA_HOST: controlplanemysqldb
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+      UPLOAD_LIMIT: 512M
+    networks:
+      - control-plane-network
+
+networks:
+  control-plane-network:
+    driver: bridge
 
 volumes:
   control_plane_storage:
   control_plane_deployments:
+  mysql_data:

@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Artisan;
+use App\Jobs\ProvisionTenantJob;
 
 class TenantController extends Controller
 {
@@ -48,17 +49,9 @@ class TenantController extends Controller
 
     public function provision(string $tenant): RedirectResponse
     {
-        $code = Artisan::call('tenant:provision', ['tenantId' => $tenant]);
-
-        if ($code !== 0) {
-            $this->tenants->updateStatus($tenant, 'FAILED');
-
-            return back()->with('error', Artisan::output());
-        }
-
-        $this->tenants->updateStatus($tenant, 'ACTIVE');
-
-        return back()->with('success', 'Tenant provisioned and marked ACTIVE.');
+        $this->tenants->updateStatus($tenant, 'PROVISIONING');
+        ProvisionTenantJob::dispatch($tenant);
+        return back()->with('success', 'Provisioning started in the background.');
     }
 
     public function suspend(string $tenant): RedirectResponse
