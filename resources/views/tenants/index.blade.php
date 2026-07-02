@@ -18,7 +18,7 @@
         </thead>
         <tbody>@forelse($tenants as $tenant)<tr>
                 <td><strong><a href="{{ route('tenants.show', $tenant['id']) }}">{{ $tenant['name'] }}</a></strong><br><code>{{ $tenant['id'] }}</code></td>
-                <td>{{ $tenant['ssh_user'] }}@{{ $tenant['target_host'] }}<br>Port {{ $tenant['app_port'] }}</td>
+                <td>{{ $tenant['ssh_user'] }} @ {{ $tenant['target_host'] }} <br>Port {{ $tenant['app_port'] }}</td>
                 <td class="status {{ $tenant['status'] }}">{{ $tenant['status'] }}</td>
                 <td>
                     <a href="{{ route('tenants.operations', $tenant['id']) }}">

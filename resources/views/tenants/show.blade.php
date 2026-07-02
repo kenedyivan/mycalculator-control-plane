@@ -14,7 +14,7 @@
         </span>
     </p>
 
-    <p><strong>Target:</strong> {{ $tenant['ssh_user'] }}@{{ $tenant['target_host'] }}</p>
+    <p><strong>Target:</strong> {{ $tenant['ssh_user'] }} @ {{ $tenant['target_host'] }}</p>
 
     <p><strong>Image:</strong> <code>{{ $tenant['image'] }}</code></p>
 
